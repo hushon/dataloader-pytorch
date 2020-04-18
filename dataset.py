@@ -6,16 +6,19 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 
 class SimpleDataset(Dataset):
-    def __init__(self, features: List[np.ndarray], labels: List[np.ndarray]):
-        """Create a Dataset object that pairs features and labels.
+    """A Dataset class that pairs features and labels.
+    Provides the method apply() for custom preprocessing functions.
 
-        Args:
-            features (list): list of input features.
-            labels (list): list of target labels.
-        """
+    Args:
+        features (list): list of input features.
+        labels (list): list of target labels.
+    """
+
+    def __init__(self, features: List[np.ndarray], labels: List[np.ndarray]):
         super().__init__()
         assert len(features) == len(labels)
-        self.features, self.labels = features, labels
+        self.features = features
+        self.labels = labels
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, np.ndarray]:
         return self.features[index], self.labels[index]
