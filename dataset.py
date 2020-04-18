@@ -6,22 +6,22 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 
 class SimpleDataset(Dataset):
-    def __init__(self, data_x: List[np.ndarray], data_y: List[np.ndarray]):
+    def __init__(self, features: List[np.ndarray], labels: List[np.ndarray]):
         """Create a Dataset object that pairs features and labels.
 
         Args:
-            data_x (list): list of input features.
-            data_y (list): list of target labels.
+            features (list): list of input features.
+            labels (list): list of target labels.
         """
         super().__init__()
-        assert len(data_x) == len(data_y)
-        self.data_x, self.data_y = data_x, data_y
+        assert len(features) == len(labels)
+        self.features, self.labels = features, labels
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, np.ndarray]:
-        return self.data_x[index], self.data_y[index]
+        return self.features[index], self.labels[index]
 
     def __len__(self):
-        return len(self.data_x)
+        return len(self.features)
 
     def apply(self, func: Callable[[np.ndarray], np.ndarray]):
         """Apply a preprocessing function to features.
@@ -29,8 +29,11 @@ class SimpleDataset(Dataset):
 
         Args:
             func (Callable): function that takes array and returns mapped array.
+
+        Returns:
+            self
         """
-        self.data_x = [func(x) for x in self.data_x]
+        self.features = [func(x) for x in self.features]
         return self
 
 
