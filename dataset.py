@@ -16,7 +16,7 @@ class SimpleDataset(Dataset):
 
     def __init__(self, features: List[np.ndarray], labels: List[np.ndarray]):
         super().__init__()
-        assert len(features) == len(labels)
+        assert len(features) == len(labels), "feature size must match label size"
         self.features = features
         self.labels = labels
 
@@ -28,7 +28,6 @@ class SimpleDataset(Dataset):
 
     def apply(self, func: Callable[[np.ndarray], np.ndarray]):
         """Apply a preprocessing function to features.
-        Feature vectors have (C, H, W) dimension.
 
         Args:
             func (Callable): function that takes array and returns mapped array.
@@ -60,17 +59,27 @@ def build_train_test_dataloaders(
         Tuple[DataLoader, DataLoader]: both dataloaders for training set and test set.
     """
     if stratify:
-        X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio, stratify=y)
+        X_train, X_test, y_train, y_test = train_test_split(x, y,
+                                                        test_size=split_ratio,
+                                                        stratify=y)
     else:
-        X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio, stratify=None)
+        X_train, X_test, y_train, y_test = train_test_split(x, y,
+                                                        test_size=split_ratio,
+                                                        stratify=None)
 
     # define tranformations for preprocessing feature vectors
     transform_train = transforms.Compose([
-        transforms.ToTensor()
+        transforms.ToPILImage(),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.5, 0.5, 0.5),
+                            std=(1.0, 1.0, 1.0))
     ])
 
     transform_test = transforms.Compose([
-        transforms.ToTensor()
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.5, 0.5, 0.5),
+                            std=(1.0, 1.0, 1.0))
     ])
 
     # define dataset
@@ -84,7 +93,7 @@ def build_train_test_dataloaders(
                                 num_workers=0,
                                 collate_fn=None,
                                 pin_memory=False,
-                                drop_last=False,
+                                drop_last=False
                                 )
     test_dataloader = DataLoader(test_dataset,
                                 batch_size=batch_size,
@@ -92,7 +101,7 @@ def build_train_test_dataloaders(
                                 num_workers=0,
                                 collate_fn=None,
                                 pin_memory=False,
-                                drop_last=False,
+                                drop_last=False
                                 )
 
     return train_dataloader, test_dataloader
@@ -101,18 +110,21 @@ def run_example():
 
     # generate example dataset
     N = 1000 # size of dataset
-    C = 10 # number of class categories
-    BATCH_SIZE = 16
-    TEST_SPLIT_RATIO = 0.2
-    X_SHAPE = (N, 1, 24, 24)
+    N_CLASS = 10 # number of class categories
+    BATCH_SIZE = 64
+    TEST_SPLIT_RATIO = 0.25
+
+    X_SHAPE = (N, 24, 24, 3)
     Y_SHAPE = (N, )
 
-    x = np.random.randint(0, 256, X_SHAPE)
-    y = np.random.randint(0, C, Y_SHAPE)
-    train_dataloader, test_dataloader = build_train_test_dataloaders(x, y, BATCH_SIZE, TEST_SPLIT_RATIO)
+    x = np.random.randint(0, 256, X_SHAPE, np.uint8)
+    y = np.random.randint(0, N_CLASS, Y_SHAPE, np.int32)
+    train_dataloader, test_dataloader = build_train_test_dataloaders(x, y,
+                                            batch_size=BATCH_SIZE,
+                                            split_ratio=TEST_SPLIT_RATIO)
 
     for x, y in train_dataloader:
-        print(f"{x.shape}, {y.shape}")
+        print(f"Batch shape: {x.shape}, {y.shape}")
 
 if __name__ == "__main__":
     run_example()
