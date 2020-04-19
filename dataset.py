@@ -49,8 +49,8 @@ def build_train_test_dataloaders(
     """Generates train and test dataloader from given feature-label pairs.
 
     Args:
-        x (list): list of input features.
-        y (list): list of target labels.
+        x (list): list of input features. Expected shape: (N, C, H, W)
+        y (list): list of target labels. Expected shape: (N, )
         batch_size (int, optional): batch size. Defaults to 1.
         split_ratio (float, optional): the portion of test size. Defaults to 0.2.
         stratify (bool, optional): equalize label distribution of train and test set. Defaults to True.
@@ -73,13 +73,13 @@ def build_train_test_dataloaders(
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.ToTensor(),
         transforms.Normalize(mean=(0.5, 0.5, 0.5),
-                            std=(1.0, 1.0, 1.0))
+                            std=(0.5, 0.5, 0.5))
     ])
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=(0.5, 0.5, 0.5),
-                            std=(1.0, 1.0, 1.0))
+                            std=(0.5, 0.5, 0.5))
     ])
 
     # define dataset
@@ -107,24 +107,29 @@ def build_train_test_dataloaders(
     return train_dataloader, test_dataloader
 
 def run_example():
-
-    # generate example dataset
+    print("=== Generate example dataset ===")
     N = 1000 # size of dataset
     N_CLASS = 10 # number of class categories
     BATCH_SIZE = 64
     TEST_SPLIT_RATIO = 0.25
-
     X_SHAPE = (N, 24, 24, 3)
     Y_SHAPE = (N, )
 
     x = np.random.randint(0, 256, X_SHAPE, np.uint8)
     y = np.random.randint(0, N_CLASS, Y_SHAPE, np.int32)
+    print(f"Dataset shape: {tuple(x.shape)}, {tuple(y.shape)}")
+
+    print("====== Create dataloaders ======")
     train_dataloader, test_dataloader = build_train_test_dataloaders(x, y,
                                             batch_size=BATCH_SIZE,
                                             split_ratio=TEST_SPLIT_RATIO)
+    print(f"Batch count: Trainset {len(train_dataloader)}, Testset {len(test_dataloader)}")
 
+    print("========= Draw batches =========")
     for x, y in train_dataloader:
-        print(f"Batch shape: {x.shape}, {y.shape}")
+        print(f"Trainset batch: {tuple(x.shape)}, {tuple(y.shape)}")
+    for x, y in test_dataloader:
+        print(f"Testset batch: {tuple(x.shape)}, {tuple(y.shape)}")
 
 if __name__ == "__main__":
     run_example()
