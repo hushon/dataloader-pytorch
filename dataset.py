@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 
-class SimpleDataset(Dataset):
+class ClassificationDataset(Dataset):
     """A Dataset class that pairs features and labels.
     Provides the method apply() for custom preprocessing functions.
 
@@ -49,7 +49,7 @@ def build_train_test_dataloaders(
     """Generates train and test dataloader from given feature-label pairs.
 
     Args:
-        x (list): list of input features. Expected shape: (N, C, H, W)
+        x (list): list of input features. Expected shape: (N, H, W, C)
         y (list): list of target labels. Expected shape: (N, )
         batch_size (int, optional): batch size. Defaults to 1.
         split_ratio (float, optional): the portion of test size. Defaults to 0.2.
@@ -83,8 +83,8 @@ def build_train_test_dataloaders(
     ])
 
     # define dataset
-    train_dataset = SimpleDataset(X_train, y_train).apply(transform_train)
-    test_dataset = SimpleDataset(X_test, y_test).apply(transform_test)
+    train_dataset = ClassificationDataset(X_train, y_train).apply(transform_train)
+    test_dataset = ClassificationDataset(X_test, y_test).apply(transform_test)
 
     # define dataloader
     train_dataloader = DataLoader(train_dataset,
