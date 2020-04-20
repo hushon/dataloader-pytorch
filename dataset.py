@@ -112,7 +112,7 @@ def run_example():
     N_CLASS = 10 # number of class categories
     BATCH_SIZE = 64
     TEST_SPLIT_RATIO = 0.25
-    X_SHAPE = (N, 24, 24, 3)
+    X_SHAPE = (N, 28, 28, 3)
     Y_SHAPE = (N, )
 
     x = np.random.randint(0, 256, X_SHAPE, np.uint8)
